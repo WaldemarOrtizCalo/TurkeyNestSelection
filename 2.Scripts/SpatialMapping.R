@@ -39,12 +39,3 @@ TurkeySpatial$Nest_Fate <- ifelse(TurkeySpatial$Nest_Fate == 1, "Successful","Fa
 Map <- TurkeySpatial %>%
   mapview(zcol = "Nest_Fate", burst = TRUE, fill = c("green","red") )
 
-Map
-register_google(key = "AIzaSyBCYv3TaFhykGEgUof3X1RGgPwncUrPg5s")
-# Fixed Map 
-basemap <- get_map(location=c(lon = -92, lat = 40), zoom=11, maptype = 'satellite', source = 'google')
-register_google(key = "AIzaSyBCYv3TaFhykGEgUof3X1RGgPwncUrPg5s")
-
-
-ggmap(basemap) + geom_point(aes(TurkeySpatial$Location_X,TurkeySpatial$Location_Y))
-
