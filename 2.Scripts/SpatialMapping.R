@@ -31,6 +31,7 @@ xy <- Spatial_Data[,c("Location_X","Location_Y")]
 #   Creating Spatial Object
 TurkeySpatial <- SpatialPointsDataFrame(coords = xy, data = Spatial_Data,
                                proj4string = CRS("+init=epsg:32615"))
+
 #   Recoding the Nest Fate to be a categorical characters variable 
 TurkeySpatial$Nest_Fate <- ifelse(TurkeySpatial$Nest_Fate == 1, "Successful","Failed")
 
