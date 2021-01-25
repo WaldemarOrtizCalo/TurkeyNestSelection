@@ -22,7 +22,6 @@ library(lubridate)
 
 #      Functions                                                            ####
 
-
 #      Data                                                                 ####
 #        [Turkey Data]                                                      ####
 
@@ -80,6 +79,15 @@ StationData <- do.call(rbind,StationData)
 
 StationData$Date <- mdy(StationData$Date)
 
+# Making all of the Data Numeric 
+
+StationData$PRCP <- as.numeric(StationData$PRCP)
+StationData$SNOW <- as.numeric(StationData$SNOW)
+StationData$SNWD <- as.numeric(StationData$SNWD)
+StationData$TMAX <- as.numeric(StationData$TMAX)
+StationData$TMIN <- as.numeric(StationData$TMIN)
+StationData$MEAN <- as.numeric(StationData$MEAN)
+
 ###############################################################################
 #   Calculating Distance Between Nests and Stations                         ####
 
@@ -98,12 +106,48 @@ WeatherStationTurkey <- foreach(i = 1:length(Indices), .combine = rbind) %do% {
 }
 
 ###############################################################################
-#   Adding Weather Data                                                     ####
+#   Adding Weather Data To Spatial Data                                     ####
+#      Function to add the data                                             ####
 
-# Starting to Write up function for weather variables
-start <- WeatherStationTurkey$Incubation_Start[1]
-end <- WeatherStationTurkey$Incubation_End[1]
+WeatherData <- function(index_number){
+  tryCatch({
+    
+    start <- WeatherStationTurkey$Incubation_Start[index_number]
+    end <- WeatherStationTurkey$Incubation_End[index_number]
+    
+    df <- subset(StationData,
+                 StationData$Station == WeatherStationTurkey$StationName[index_number]) %>% 
+      filter(between(Date,as.Date(start), as.Date(end)))
+    
+    
+    df<-data.frame(df = unique(df$Station),
+                   Total_Precip = sum(df$PRCP,na.rm = T),
+                   RainDays = n_distinct(df$PRCP,na.rm = T),
+                   MaxTemp = mean(df$TMAX,na.rm = T),
+                   MinTemp = mean(df$TMIN,na.rm = T),
+                   MeanTemp = mean(df$MEAN,na.rm = T)
+    )
+    
+    Final <- cbind(WeatherStationTurkey[index_number,],df[,2:ncol(df)])
+    
+    return(Final)
+    
+  },
+  
+  error=function(e) c(NA))
+  
+}
 
-df <- subset(StationData,
-             StationData$Station == WeatherStationTurkey$StationName[1]) %>% 
-  filter(between(Date,as.Date(start), as.Date(end)))
+#      Executing Function                                                   ####
+
+FinalData <- lapply(1:nrow(WeatherStationTurkey),WeatherData)
+
+FinalData <- do.call(rbind,FinalData)
+
+
+
+#      Exporting Dataset                                                    ####
+
+write.csv(FinalData,
+          file = "1.Data/FinalData.csv",
+          row.names = F)
