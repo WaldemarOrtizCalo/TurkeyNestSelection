@@ -15,6 +15,7 @@ library(tidyverse)
 library(survival)
 library(survminer)
 library(stargazer)
+library(PerformanceAnalytics)
 
 #      Functions                                                            ####
 
@@ -67,6 +68,7 @@ Micro12 <- df[,'% SC (1.0-1.8 m)']
 
 
 #      Model Sets                                                           ####
+
 
 # Model 
 
@@ -128,6 +130,13 @@ MeanTemp                 <- Data_CoxHaz$MeanTemp
 MaxTemp                  <- Data_CoxHaz$MaxTemp
 MinTemp                  <- Data_CoxHaz$MinTemp
 
+
+chart.Correlation(Data_CoxHaz[6:20], histogram=TRUE, pch=19)
+
+chart.Correlation(Data_CoxHaz[22:32], histogram=TRUE, pch=19)
+
+chart.Correlation(Data_CoxHaz[38:42], histogram=TRUE, pch=19)
+
 #      Model Sets                                                           ####
 #        [Global Model]                                                     ####
 
@@ -140,9 +149,13 @@ Global_HazCox <- coxph(response ~ HabitatType +
                          BasalArea + ForestEdgeDist + Height_GC +
                          Percent_CanopyClosure + Percent_BareGroundLitter +
                          Percent_Grasses + Percent_Forbs + Percent_WoodyVeg +
-                         Percent_SC1 + Percent_SC2 + Percent_SC3)
+                         Percent_SC1 + Percent_SC2 + Percent_SC3+
+                         PrecipAmount + PrecipDays + MeanTemp + MinTemp + MaxTemp
+                         )
 
 summary(Global_HazCox)
+
+
 
 #        [Habitat Model]  (Significant)                                     ####
 Habitat_HazCox <- coxph(response ~ HabitatType)
@@ -165,6 +178,12 @@ Macro_HazCox <- coxph(response ~ Forest_100m + Forest_200m + Forest_400m +
                         ForestEdge_100m + ForestEdge_200m + ForestEdge_400m)
 
 summary(Macro_HazCox)
+
+#        [Weather Model] (Somewhat significant)                             ####
+Weather_HazCox <- coxph(response ~ PrecipAmount + PrecipDays + MeanTemp + MinTemp + MaxTemp)
+
+summary(Weather_HazCox)
+
 
 #        [Global 100m Model]                                                ####
 Macro100m_HazCox <- coxph(response ~ Forest_100m + Herb_100m + Crop_100m + 
@@ -236,14 +255,14 @@ Crop200m_HazCox <- coxph(response ~ Crop_200m)
 
 summary(Crop200m_HazCox)
 
-
+tab_model(Crop200m_HazCox)
 
 #        [Crop 400m Model] (Somewhat Significant)                           ####
 Crop400m_HazCox <- coxph(response ~ Crop_400m)
 
 summary(Crop400m_HazCox)
 
-
+tab_model(Crop400m_HazCox)
 
 #        [Other 100m Model]                                                 ####
 Other100m_HazCox <- coxph(response ~ Other_100m)
