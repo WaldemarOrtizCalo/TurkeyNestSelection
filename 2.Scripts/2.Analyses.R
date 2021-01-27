@@ -77,7 +77,7 @@ m1 <- clogit(response ~ Micro01 + strata(strata),data = Data_NestSelection)
 summary(m1)
 
 ###############################################################################
-#   Site Selection Analysis                                                 ####
+#   Site Success Analysis                                                   ####
 #      Data Prep                                                            ####
 
 # Removing Random nest from the data 
@@ -88,6 +88,8 @@ Data_CoxHaz$NumberOfDays <- as.numeric(Data_CoxHaz$NumberOfDays)
 Data_CoxHaz$Nest_Fate <- as.numeric(Data_CoxHaz$Nest_Fate)
 
 #      Variable Prep                                                        ####
+
+#        [Variables]                                                        ####
 
 # Dependent Variable as a Survival Object 
 
@@ -130,12 +132,26 @@ MeanTemp                 <- Data_CoxHaz$MeanTemp
 MaxTemp                  <- Data_CoxHaz$MaxTemp
 MinTemp                  <- Data_CoxHaz$MinTemp
 
+#        [Checking for Correlations]                                        ####
+
+# Checking for Correlated Variables
+
+# All of the Variables
+chart.Correlation(Data_CoxHaz[c(6:20,22:32,38:42)], histogram=TRUE, pch=19)
+
+# Separated into Groups
 
 chart.Correlation(Data_CoxHaz[6:20], histogram=TRUE, pch=19)
 
 chart.Correlation(Data_CoxHaz[22:32], histogram=TRUE, pch=19)
 
 chart.Correlation(Data_CoxHaz[38:42], histogram=TRUE, pch=19)
+
+# Matrix
+allcor <- cor(Data_CoxHaz[c(6:20,22:32,38:42)])
+cor <- data.frame(round(allcor, 2))
+
+write.csv(cor, file = "3.Output/CorrelationMatrix.csv")
 
 #      Model Sets                                                           ####
 #        [Global Model]                                                     ####
@@ -406,6 +422,21 @@ summary(MaxTemp_HazCox)
 MinTemp_HazCox <- coxph(response ~ MinTemp)
 
 summary(MinTemp_HazCox)
+
+
+#      Building Final Model                                                 ####
+
+# Notes: Based on the Correlation Matrix Analysis, I removed any variables that
+# had a correlation greater than 0.6. 
+
+# Variable list 
+
+FinalModel <- coxph(response ~ Forest_200m + Crop_200m + Other_200m + 
+                          ForestEdgeDist+ BasalArea + Height_GC + Percent_Grasses + 
+                          Percent_Forbs + HabitatType +
+                          MeanTemp + PrecipAmount)
+
+summary(FinalModel)
 
 
 #   Model Diagnostics                                                       ####
