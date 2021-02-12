@@ -174,9 +174,7 @@ summary(Global_HazCox)
 
 
 #        [Habitat Model]  (Significant)                                     ####
-Habitat_HazCox <- coxph(response ~ HabitatType)
-
-summary(Habitat_HazCox)
+Somewhat
 
 #        [Micro Model]                                                      ####
 Micro_HazCox <- coxph(response ~ BasalArea + ForestEdgeDist + Height_GC +
@@ -195,7 +193,7 @@ Macro_HazCox <- coxph(response ~ Forest_100m + Forest_200m + Forest_400m +
 
 summary(Macro_HazCox)
 
-#        [Weather Model] (Somewhat significant)                             ####
+#        [Weather Model]                                                    ####
 Weather_HazCox <- coxph(response ~ PrecipAmount + PrecipDays + MeanTemp + MinTemp + MaxTemp)
 
 summary(Weather_HazCox)
@@ -271,14 +269,14 @@ Crop200m_HazCox <- coxph(response ~ Crop_200m)
 
 summary(Crop200m_HazCox)
 
-tab_model(Crop200m_HazCox)
+
 
 #        [Crop 400m Model] (Somewhat Significant)                           ####
 Crop400m_HazCox <- coxph(response ~ Crop_400m)
 
 summary(Crop400m_HazCox)
 
-tab_model(Crop400m_HazCox)
+
 
 #        [Other 100m Model]                                                 ####
 Other100m_HazCox <- coxph(response ~ Other_100m)
