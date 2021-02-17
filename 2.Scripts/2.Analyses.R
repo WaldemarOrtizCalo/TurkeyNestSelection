@@ -16,6 +16,7 @@ library(survival)
 library(survminer)
 library(stargazer)
 library(PerformanceAnalytics)
+library(effects)
 
 #      Functions                                                            ####
 
@@ -34,7 +35,7 @@ Data_Weather <- read_csv("1.Data/FinalData.csv")
 Data_Weather$Nest_Fate <- if_else(Data_Weather$Nest_Fate == "Successful", 1, 0)
 
 ###############################################################################
-#   Site Selection Analysis (Not Done)                                      ####
+#   Site Selection Analysis                                                 ####
 #      Data Prep                                                            ####
 
 # Eliminating Hens with repeat nest
@@ -51,30 +52,275 @@ response <- Data_NestSelection[,'Nest_Type']
 # Strata
 strata <- Data_NestSelection[,'Hen_ID']
 
-# Independent Variables
-Micro01 <- Data_NestSelection[,'Amount_Forest_100m']
-Micro02 <- df[,'Basal Area']
-Micro03 <- df[,'Forest Edge Distance']
-Micro04 <- df[,'% Canopy Closure']
-Micro05 <- df[,'GC Height']
-Micro06 <- df[,'% BG/Litter']
-Micro07 <- df[,'% Grasses']
-Micro08 <- df[,'% Forbs']
-Micro09 <- df[,'% Woody Veg.']
-Micro10 <- df[,'% SC (0.0-0.5 m)']
-Micro11 <- df[,'% SC (0.5-1.0 m)']
-Micro12 <- df[,'% SC (1.0-1.8 m)']
-
-
+HabitatType              <- factor(Data_NestSelection$Habitat_Type, levels = c("Opening","Edge","Forest"))
+Forest_100m              <- Data_NestSelection$Amount_Forest_100m
+Herb_100m                <- Data_NestSelection$Amount_Herb_100m
+Crop_100m                <- Data_NestSelection$Amount_Crop_100m
+Other_100m               <- Data_NestSelection$Amount_Other_100m
+ForestEdge_100m          <- Data_NestSelection$Amount_ForestEdge_100m
+Forest_200m              <- Data_NestSelection$Amount_Forest_200m
+Herb_200m                <- Data_NestSelection$Amount_Herb_200m
+Crop_200m                <- Data_NestSelection$Amount_Crop_200m
+Other_200m               <- Data_NestSelection$Amount_Other_200m
+ForestEdge_200m          <- Data_NestSelection$Amount_ForestEdge_200m
+Forest_400m              <- Data_NestSelection$Amount_Forest_400m
+Herb_400m                <- Data_NestSelection$Amount_Herb_400m
+Crop_400m                <- Data_NestSelection$Amount_Crop_400m
+Other_400m               <- Data_NestSelection$Amount_Other_400m
+ForestEdge_400m          <- Data_NestSelection$Amount_ForestEdge_400m
+BasalArea                <- Data_NestSelection$Basal_Area 
+ForestEdgeDist           <- Data_NestSelection$ForestEdgeDistance
+Height_GC                <- Data_NestSelection$Height_GC
+Percent_CanopyClosure    <- Data_NestSelection$Percent_CanopyClosure
+Percent_BareGroundLitter <- Data_NestSelection$Percent_BareGroundtoLiter
+Percent_Grasses          <- Data_NestSelection$Percent_Grasses
+Percent_Forbs            <- Data_NestSelection$Percent_Forbs
+Percent_WoodyVeg         <- Data_NestSelection$Percent_WoodyVeg
+Percent_SC1              <- Data_NestSelection$Percent_ScreeningCover_0_0.5
+Percent_SC2              <- Data_NestSelection$Percent_ScreeningCover_0.5_1.0
+Percent_SC3              <- Data_NestSelection$Percent_ScreeningCover_1.0_1.8
 
 #      Model Sets                                                           ####
 
+m1 <- clogit(response ~ Percent_Forbs + strata(strata),data = Data_NestSelection)
+#        [Global Model]                                 No Convergance      ####
 
-# Model 
+Global_NestSelect <- clogit(response ~ HabitatType + 
+                         Forest_100m + Forest_200m + Forest_400m +
+                         Herb_100m + Herb_200m + Herb_400m +
+                         Crop_100m + Crop_200m + Crop_400m +
+                         Other_100m + Other_200m + Other_400m +
+                         ForestEdge_100m + ForestEdge_200m + ForestEdge_400m +
+                         BasalArea + ForestEdgeDist + Height_GC +
+                         Percent_CanopyClosure + Percent_BareGroundLitter +
+                         Percent_Grasses + Percent_Forbs + Percent_WoodyVeg +
+                         Percent_SC1 + Percent_SC2 + Percent_SC3 +
+                         strata(strata),data = Data_NestSelection)
 
-m1 <- clogit(response ~ Micro01 + strata(strata),data = Data_NestSelection)
+summary(Global_NestSelect)
 
-summary(m1)
+#        [Habitat Model]                                Close               ####
+
+Habitat_NestSelect <- clogit(response ~ HabitatType + 
+                         strata(strata),data = Data_NestSelection)
+
+summary(Habitat_NestSelect)
+
+#        [Micro Model]                                  Close               ####
+
+Micro_NestSelect <- clogit(response ~ BasalArea + ForestEdgeDist + Height_GC +
+                        Percent_CanopyClosure + Percent_BareGroundLitter +
+                        Percent_Grasses + Percent_Forbs + Percent_WoodyVeg +
+                        Percent_SC1 + Percent_SC2 + Percent_SC3 + 
+                        strata(strata),data = Data_NestSelection)
+
+summary(Micro_NestSelect)
+
+#        [Macro Model]                                  Very Significant    ####
+Macro_NestSelect <- clogit(response ~ Forest_100m + Forest_200m + Forest_400m +
+                        Herb_100m + Herb_200m + Herb_400m +
+                        Crop_100m + Crop_200m + Crop_400m +
+                        Other_100m + Other_200m + Other_400m +
+                        ForestEdge_100m + ForestEdge_200m + ForestEdge_400m+ 
+                        strata(strata),data = Data_NestSelection)
+
+summary(Macro_NestSelect)
+
+#        [Global 100m Model]                            Very Significant    ####
+Macro100m_NestSelect <- clogit(response ~ Forest_100m + Herb_100m + Crop_100m + 
+                             Other_100m + ForestEdge_100m + 
+                             strata(strata),data = Data_NestSelection)
+
+summary(Macro100m_NestSelect)
+
+#        [Global 200m Model]                            Very Significant    ####
+Macro200m_NestSelect <- clogit(response ~ Forest_200m + Herb_200m + Crop_200m + 
+                            Other_200m + ForestEdge_200m+ 
+                             strata(strata),data = Data_NestSelection)
+
+summary(Macro200m_NestSelect)
+
+#        [Global 400m Model]                            Very Significant    ####
+Macro400m_NestSelect <- clogit(response ~ Forest_400m + Herb_400m + Crop_400m + 
+                            Other_400m + ForestEdge_400m + 
+                             strata(strata),data = Data_NestSelection)
+
+summary(Macro400m_NestSelect)
+
+#        [Forest 100m Model]                            Close               ####
+Forest100m_NestSelect <- clogit(response ~ Forest_100m + 
+                              strata(strata),data = Data_NestSelection)
+
+summary(Forest100m_NestSelect)
+
+#        [Forest 200m Model]                            Close               ####
+Forest200m_NestSelect <- clogit(response ~ Forest_200m + 
+                              strata(strata),data = Data_NestSelection)
+
+summary(Forest200m_NestSelect)
+
+#        [Forest 400m Model]                            Significant         ####
+Forest400m_NestSelect <- clogit(response ~ Forest_400m + 
+                              strata(strata),data = Data_NestSelection)
+
+summary(Forest400m_NestSelect)
+
+#        [Herb 100m Model]                                                  ####
+Herb100m_NestSelect <- clogit(response ~ Herb_100m + 
+                            strata(strata),data = Data_NestSelection)
+
+summary(Herb100m_NestSelect)
+
+#        [Herb 200m Model]                                                  ####
+Herb200m_NestSelect <- clogit(response ~ Herb_200m + 
+                            strata(strata),data = Data_NestSelection)
+
+summary(Herb200m_NestSelect)
+
+#        [Herb 400m Model]                              Close               ####
+Herb400m_NestSelect <- clogit(response ~ Herb_400m + 
+                            strata(strata),data = Data_NestSelection)
+
+summary(Herb400m_NestSelect)
+
+#        [Crop 100m Model]                              Significant         ####
+Crop100m_NestSelect <- clogit(response ~ Crop_100m + 
+                            strata(strata),data = Data_NestSelection)
+
+summary(Crop100m_NestSelect)
+
+#        [Crop 200m Model]                              Significant         ####
+Crop200m_NestSelect <- clogit(response ~ Crop_200m + 
+                            strata(strata),data = Data_NestSelection)
+
+summary(Crop200m_NestSelect)
+ 
+#        [Crop 400m Model]                              Significant         ####
+Crop400m_NestSelect <- clogit(response ~ Crop_400m + 
+                            strata(strata),data = Data_NestSelection)
+
+summary(Crop400m_NestSelect)
+
+#        [Other 100m Model]                                                 ####
+Other100m_NestSelect <- clogit(response ~ Other_100m + 
+                             strata(strata),data = Data_NestSelection)
+
+summary(Other100m_NestSelect)
+
+#        [Other 200m Model]                                                 ####
+Other200m_NestSelect <- clogit(response ~ Other_200m + 
+                             strata(strata),data = Data_NestSelection)
+
+summary(Other200m_NestSelect)
+
+#        [Other 400m Model]                                                 ####
+Other400m_NestSelect <- clogit(response ~ Other_400m + 
+                             strata(strata),data = Data_NestSelection)
+
+summary(Other400m_NestSelect)
+
+#        [Forest Edge 100m Model]                       Significant         ####
+ForestEdge100m_NestSelect <- clogit(response ~ ForestEdge_100m + 
+                                  strata(strata),data = Data_NestSelection)
+
+summary(ForestEdge100m_NestSelect)
+
+#        [Forest Edge 200m Model]                       Significant         ####
+ForestEdge200m_NestSelect <- clogit(response ~ ForestEdge_200m + 
+                                  strata(strata),data = Data_NestSelection)
+
+summary(ForestEdge200m_NestSelect)
+
+#        [Forest Edge 400m Model]                       Significant         ####
+ForestEdge400m_NestSelect <- clogit(response ~ ForestEdge_400m + 
+                                  strata(strata),data = Data_NestSelection)
+
+summary(ForestEdge400m_NestSelect)
+
+#        [Basal Area Model]                                                 ####
+
+BasalArea_NestSelect <- clogit(response ~ BasalArea + 
+                             strata(strata),data = Data_NestSelection)
+
+summary(BasalArea_NestSelect)
+
+#        [Forest Edge Dist Model]                                           ####
+
+ForestEdgeDist_NestSelect <- clogit(response ~ ForestEdgeDist + 
+                                  strata(strata),data = Data_NestSelection)
+
+summary(ForestEdgeDist_NestSelect)
+
+#        [Height GC Model]                              Significant         ####
+
+HeightGC_NestSelect <- clogit(response ~ Height_GC + 
+                            strata(strata),data = Data_NestSelection)
+
+summary(HeightGC_NestSelect)
+
+#        [Percent Canopy Closure Model]                 Significant         ####
+
+PercentCanopyClosure_NestSelect <- clogit(response ~ Percent_CanopyClosure + 
+                                        strata(strata),data = Data_NestSelection)
+
+summary(PercentCanopyClosure_NestSelect)
+
+#        [Percent Bare Ground Litter Model]             Close               ####
+
+PercentBareGroundLitter_NestSelect <- clogit(response ~ Percent_BareGroundLitter + 
+                                           strata(strata),data = Data_NestSelection)
+
+summary(PercentBareGroundLitter_NestSelect)
+
+#        [Percent Grasses Model]                        Significant         ####
+
+PercentGrasses_NestSelect <- clogit(response ~ Percent_Grasses + 
+                                  strata(strata),data = Data_NestSelection)
+
+summary(PercentGrasses_NestSelect)
+
+#        [Percent Forbs Model]                                              ####
+
+PercentForbs_NestSelect <- clogit(response ~ Percent_Forbs + 
+                                strata(strata),data = Data_NestSelection)
+
+summary(PercentForbs_NestSelect)
+
+#        [Percent WoodyVeg Model]                       Significant         ####
+
+PercentWoodyVeg_NestSelect <- clogit(response ~ Percent_WoodyVeg + 
+                                   strata(strata),data = Data_NestSelection)
+
+summary(PercentWoodyVeg_NestSelect)
+
+#        [Percent SC1 Model]                            Significant         ####
+
+PercentSC1_NestSelect <- clogit(response ~ Percent_SC1 + 
+                              strata(strata),data = Data_NestSelection)
+
+summary(PercentSC1_NestSelect)
+
+#        [Percent SC2 Model]                            Significant         ####
+
+PercentSC2_NestSelect <- clogit(response ~ Percent_SC2 + 
+                              strata(strata),data = Data_NestSelection)
+
+summary(PercentSC2_NestSelect)
+
+#        [Percent SC3 Model]                            Significant         ####
+
+PercentSC3_NestSelect <- clogit(response ~ Percent_SC3 + 
+                              strata(strata),data = Data_NestSelection)
+
+summary(PercentSC3_NestSelect)
+
+#        [Final Model]                                  Significant         ####
+
+FinalModel <- clogit(response ~ Crop_200m + 
+                       Height_GC + Percent_Grasses +
+                      strata(strata),data = Data_NestSelection)
+
+summary(FinalModel)
 
 ###############################################################################
 #   Site Success Analysis                                                   ####
@@ -154,7 +400,7 @@ cor <- data.frame(round(allcor, 2))
 write.csv(cor, file = "3.Output/CorrelationMatrix.csv")
 
 #      Model Sets                                                           ####
-#        [Global Model]                                                     ####
+#        [Global Model]            Significant                              ####
 
 Global_HazCox <- coxph(response ~ HabitatType + 
                          Forest_100m + Forest_200m + Forest_400m +
@@ -173,9 +419,10 @@ summary(Global_HazCox)
 
 
 
-#        [Habitat Model]  (Significant)                                     ####
-Somewhat
+#        [Habitat Model]    Significant                                   ####
+Habitat_HazCox <- coxph(response ~ HabitatType)
 
+summary(Global_HazCox)
 #        [Micro Model]                                                      ####
 Micro_HazCox <- coxph(response ~ BasalArea + ForestEdgeDist + Height_GC +
                         Percent_CanopyClosure + Percent_BareGroundLitter +
@@ -184,7 +431,7 @@ Micro_HazCox <- coxph(response ~ BasalArea + ForestEdgeDist + Height_GC +
 
 summary(Micro_HazCox)
 
-#        [Macro Model] (Somewhat significant)                               ####
+#        [Macro Model]       Significant                         ####
 Macro_HazCox <- coxph(response ~ Forest_100m + Forest_200m + Forest_400m +
                         Herb_100m + Herb_200m + Herb_400m +
                         Crop_100m + Crop_200m + Crop_400m +
@@ -213,7 +460,7 @@ summary(Macro200m_HazCox)
 
 
 
-#        [Global 400m Model]                                                ####
+#        [Global 400m Model]  Significant                                              ####
 Macro400m_HazCox <- coxph(response ~ Forest_400m + Herb_400m + Crop_400m + 
                             Other_400m + ForestEdge_400m)
 
@@ -264,14 +511,14 @@ Crop100m_HazCox <- coxph(response ~ Crop_100m)
 summary(Crop100m_HazCox)
 
 
-#        [Crop 200m Model] (Somewhat Significant)                           ####
+#        [Crop 200m Model]    Significant                                              ####
 Crop200m_HazCox <- coxph(response ~ Crop_200m)
 
 summary(Crop200m_HazCox)
 
 
 
-#        [Crop 400m Model] (Somewhat Significant)                           ####
+#        [Crop 400m Model]                                                  ####
 Crop400m_HazCox <- coxph(response ~ Crop_400m)
 
 summary(Crop400m_HazCox)
@@ -311,7 +558,7 @@ summary(ForestEdge200m_HazCox)
 
 
 
-#        [Forest Edge 400m Model]                                           ####
+#        [Forest Edge 400m Model]      Close                               ####
 ForestEdge400m_HazCox <- coxph(response ~ ForestEdge_400m)
 
 summary(ForestEdge400m_HazCox)
@@ -429,13 +676,15 @@ summary(MinTemp_HazCox)
 
 # Variable list 
 
-FinalModel <- coxph(response ~ Forest_200m + Crop_200m + Other_200m + 
+FinalModel1 <- coxph(response ~ Forest_200m + Crop_200m + Other_200m + 
                           ForestEdgeDist+ BasalArea + Height_GC + Percent_Grasses + 
                           Percent_Forbs + HabitatType +
                           MeanTemp + PrecipAmount)
 
-summary(FinalModel)
+FinalModel2 <- coxph(response ~ Crop_200m +  
+                     Percent_Forbs + HabitatType)
 
+summary(FinalModel2)
 
 #   Model Diagnostics                                                       ####
 
@@ -453,3 +702,4 @@ ggcoxzph(test.ph)
 
 
 ###############################################################################
+
