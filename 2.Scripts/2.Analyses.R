@@ -108,21 +108,22 @@ summary(Habitat_NestSelect)
 
 #        [Micro Model]                                  Close               ####
 
-Micro_NestSelect <- clogit(response ~ BasalArea + ForestEdgeDist + Height_GC +
+Micro_NestSelect <- glm(response ~ BasalArea + ForestEdgeDist + Height_GC +
                         Percent_CanopyClosure + Percent_BareGroundLitter +
                         Percent_Grasses + Percent_Forbs + Percent_WoodyVeg +
-                        Percent_SC1 + Percent_SC2 + Percent_SC3 + 
-                        strata(strata),data = Data_NestSelection)
+                        Percent_SC1 + Percent_SC2 + Percent_SC3, 
+                        data = Data_NestSelection, family = "binomial")
 
 summary(Micro_NestSelect)
 
+
 #        [Macro Model]                                  Very Significant    ####
-Macro_NestSelect <- clogit(response ~ Forest_100m + Forest_200m + Forest_400m +
+Macro_NestSelect <- glm(response ~ Forest_100m + Forest_200m + Forest_400m +
                         Herb_100m + Herb_200m + Herb_400m +
                         Crop_100m + Crop_200m + Crop_400m +
                         Other_100m + Other_200m + Other_400m +
-                        ForestEdge_100m + ForestEdge_200m + ForestEdge_400m+ 
-                        strata(strata),data = Data_NestSelection)
+                        ForestEdge_100m + ForestEdge_200m + ForestEdge_400m, 
+                        data = Data_NestSelection, family = "binomial")
 
 summary(Macro_NestSelect)
 
@@ -316,11 +317,14 @@ summary(PercentSC3_NestSelect)
 
 #        [Final Model]                                  Significant         ####
 
-FinalModel <- clogit(response ~ Crop_200m + 
-                       Height_GC + Percent_Grasses +
-                      strata(strata),data = Data_NestSelection)
+FinalModel <- glm(response ~ Crop_200m + 
+            Height_GC + Percent_Grasses,
+          data = Data_NestSelection, family = "binomial")
 
 summary(FinalModel)
+
+
+ggcoef(FinalModel, exclude_intercept = TRUE, exponentiate = TRUE, sort = "ascending")
 
 ###############################################################################
 #   Site Success Analysis                                                   ####

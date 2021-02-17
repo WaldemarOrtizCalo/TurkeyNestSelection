@@ -40,4 +40,14 @@ TurkeySpatial$Nest_Fate <- ifelse(TurkeySpatial$Nest_Fate == 1, "Successful","Fa
 Map <- TurkeySpatial %>%
   mapview(zcol = "Nest_Fate", burst = TRUE, fill = c("green","red") )
 
-Map
+mapview(TurkeySpatial,zcol = "Nest_Fate", burst = TRUE, fill = c("green","red"))+ mapview(WeatherStationsSpatial)
+
+
+
+xyweather <- WeatherStations[,c("Lon","Lat")] 
+
+WeatherStationsSpatial <- SpatialPointsDataFrame(coords = xyweather, data = WeatherStations,
+                                        proj4string = CRS("+init=epsg:4326"))
+
+map2<-WeatherStationsSpatial %>%
+  mapview(burst = TRUE, fill = c("green","red") )
