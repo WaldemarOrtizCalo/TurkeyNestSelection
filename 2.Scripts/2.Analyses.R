@@ -17,6 +17,7 @@ library(survminer)
 library(stargazer)
 library(PerformanceAnalytics)
 library(effects)
+library(GGally)
 
 #      Functions                                                            ####
 
@@ -326,6 +327,32 @@ summary(FinalModel)
 
 ggcoef(FinalModel, exclude_intercept = TRUE, exponentiate = TRUE, sort = "ascending")
 
+#        [Micro]                                                            ####
+
+chart.Correlation(Data_NestSelection[,24:34], histogram=TRUE, pch=19)
+
+Micro_NestSelect <- glm(response ~ Height_GC + Percent_WoodyVeg, 
+                        data = Data_NestSelection, family = "binomial")
+
+summary(Micro_NestSelect)
+
+ggcoef(Micro_NestSelect, exclude_intercept = TRUE, exponentiate = TRUE, sort = "ascending")
+
+#        [Macro]                                                            ####
+
+chart.Correlation(my_data, histogram=TRUE, pch=19)
+
+chart.Correlation(Data_NestSelection[,6:20], histogram=TRUE, pch=19)
+
+Macro_NestSelect <- glm(response ~ Forest_200m + Herb_200m + 
+                          Crop_200m + Other_200m + ForestEdge_200m,
+                        data = Data_NestSelection, family = "binomial")
+
+summary(Macro_NestSelect)
+
+ggcoef(Macro_NestSelect, exclude_intercept = TRUE, exponentiate = TRUE, sort = "ascending")
+
+
 ###############################################################################
 #   Site Success Analysis                                                   ####
 #      Data Prep                                                            ####
@@ -423,7 +450,7 @@ summary(Global_HazCox)
 
 
 
-#        [Habitat Model]    Significant                                   ####
+#        [Habitat Model]    Significant                                     ####
 Habitat_HazCox <- coxph(response ~ HabitatType)
 
 summary(Global_HazCox)
@@ -435,7 +462,7 @@ Micro_HazCox <- coxph(response ~ BasalArea + ForestEdgeDist + Height_GC +
 
 summary(Micro_HazCox)
 
-#        [Macro Model]       Significant                         ####
+#        [Macro Model]       Significant                                    ####
 Macro_HazCox <- coxph(response ~ Forest_100m + Forest_200m + Forest_400m +
                         Herb_100m + Herb_200m + Herb_400m +
                         Crop_100m + Crop_200m + Crop_400m +
@@ -464,7 +491,7 @@ summary(Macro200m_HazCox)
 
 
 
-#        [Global 400m Model]  Significant                                              ####
+#        [Global 400m Model]  Significant                                   ####
 Macro400m_HazCox <- coxph(response ~ Forest_400m + Herb_400m + Crop_400m + 
                             Other_400m + ForestEdge_400m)
 
@@ -515,7 +542,7 @@ Crop100m_HazCox <- coxph(response ~ Crop_100m)
 summary(Crop100m_HazCox)
 
 
-#        [Crop 200m Model]    Significant                                              ####
+#        [Crop 200m Model]    Significant                                   ####
 Crop200m_HazCox <- coxph(response ~ Crop_200m)
 
 summary(Crop200m_HazCox)
@@ -562,7 +589,7 @@ summary(ForestEdge200m_HazCox)
 
 
 
-#        [Forest Edge 400m Model]      Close                               ####
+#        [Forest Edge 400m Model]      Close                                ####
 ForestEdge400m_HazCox <- coxph(response ~ ForestEdge_400m)
 
 summary(ForestEdge400m_HazCox)
@@ -690,6 +717,26 @@ FinalModel2 <- coxph(response ~ Crop_200m +
 
 summary(FinalModel2)
 
+#        [Macro]                                                            ####
+
+chart.Correlation(Data_NestSelection[,6:20], histogram=TRUE, pch=19)
+
+Macro_HazCox <- coxph(response ~ Forest_200m +
+                        Herb_200m +
+                        Crop_200m +
+                        Other_200m)
+
+summary(Macro_HazCox)
+
+#        [Micro]                                                            ####
+
+chart.Correlation(Data_NestSelection[,24:34], histogram=TRUE, pch=19)
+
+Micro_HazCox <- coxph(response ~ BasalArea + ForestEdgeDist + Height_GC +
+                        Percent_Grasses + Percent_Forbs + Percent_WoodyVeg)
+
+summary(Micro_HazCox)
+
 #   Model Diagnostics                                                       ####
 
 # Testing for the proportional-hazards assumption
@@ -706,4 +753,3 @@ ggcoxzph(test.ph)
 
 
 ###############################################################################
-
