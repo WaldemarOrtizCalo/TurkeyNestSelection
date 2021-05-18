@@ -331,6 +331,12 @@ ggcoef(FinalModel, exclude_intercept = TRUE, exponentiate = TRUE, sort = "ascend
 
 chart.Correlation(Data_NestSelection[,24:34], histogram=TRUE, pch=19)
 
+Micro_NestSelectComp <- glm(response ~ BasalArea + ForestEdgeDist + Percent_BareGroundLitter+ Percent_Forbs +
+                            Height_GC + Percent_WoodyVeg, 
+                        data = Data_NestSelection, family = "binomial")
+
+summary(Micro_NestSelectComp)
+
 Micro_NestSelect <- glm(response ~ Height_GC + Percent_WoodyVeg, 
                         data = Data_NestSelection, family = "binomial")
 
@@ -339,8 +345,6 @@ summary(Micro_NestSelect)
 ggcoef(Micro_NestSelect, exclude_intercept = TRUE, exponentiate = TRUE, sort = "ascending")
 
 #        [Macro]                                                            ####
-
-chart.Correlation(my_data, histogram=TRUE, pch=19)
 
 chart.Correlation(Data_NestSelection[,6:20], histogram=TRUE, pch=19)
 
@@ -721,10 +725,17 @@ summary(FinalModel2)
 
 chart.Correlation(Data_NestSelection[,6:20], histogram=TRUE, pch=19)
 
-Macro_HazCox <- coxph(response ~ Forest_200m +
+
+Macro_HazCoxComp <- coxph(response ~ Forest_200m +
                         Herb_200m +
                         Crop_200m +
-                        Other_200m)
+                        Other_200m+
+                        ForestEdge_200m)
+
+summary(Macro_HazCoxComp)
+
+Macro_HazCox <- coxph(response ~ Forest_200m +
+                        Herb_200m)
 
 summary(Macro_HazCox)
 
@@ -732,8 +743,14 @@ summary(Macro_HazCox)
 
 chart.Correlation(Data_NestSelection[,24:34], histogram=TRUE, pch=19)
 
-Micro_HazCox <- coxph(response ~ BasalArea + ForestEdgeDist + Height_GC +
+
+Micro_HazCoxComp <- coxph(response ~ BasalArea + ForestEdgeDist + Height_GC +
                         Percent_Grasses + Percent_Forbs + Percent_WoodyVeg)
+
+summary(Micro_HazCoxComp)
+
+
+Micro_HazCox <- coxph(response ~ 1)
 
 summary(Micro_HazCox)
 
