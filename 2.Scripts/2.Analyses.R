@@ -31,7 +31,7 @@ Data_MC <- read.csv("1.Data/Final_MissingCases.csv")
 
 #        [Weather Data]                                                     ####
 
-Data_Weather <- read_csv("1.Data/FinalData.csv")
+Data_Weather <- read.csv("1.Data/FinalData.csv")
 
 Data_Weather$Nest_Fate <- if_else(Data_Weather$Nest_Fate == "Successful", 1, 0)
 
@@ -363,7 +363,7 @@ ggcoef(Macro_NestSelect, exclude_intercept = TRUE, exponentiate = TRUE, sort = "
 
 # Removing Random nest from the data 
 Data_CoxHaz <- subset(Data_Weather,Data_Weather$Nest_Type == "Nest")
-
+Data_CoxHaz$Nest_Fate<-ifelse(Data_CoxHaz$Nest_Fate == 0,1,0)
 # Making Sure Number of days is a numeric variable 
 Data_CoxHaz$NumberOfDays <- as.numeric(Data_CoxHaz$NumberOfDays)
 Data_CoxHaz$Nest_Fate <- as.numeric(Data_CoxHaz$Nest_Fate)
@@ -754,19 +754,16 @@ Micro_HazCox <- coxph(response ~ 1)
 
 summary(Micro_HazCox)
 
-#   Model Diagnostics                                                       ####
+#      Survival Plots                                                       ####
 
-# Testing for the proportional-hazards assumption
+# Micro
+ggsurvplot(survfit(Micro_HazCoxComp,data=Data_CoxHaz), color = "#2E9FDF",
+           title = "Micro Model",
+           ggtheme = theme_minimal())
 
-# Notes: Based on the ouput of this model, you need to make sure that the test
-# is not statistically for any of the covariates. If they are not statistically
-# significant, you can assume proportional hazards. 
-
-
-test.ph <- cox.zph(HazCox)
-
-ggcoxzph(test.ph)
-
-
+# Macro
+ggsurvplot(survfit(Macro_HazCoxComp,data=Data_CoxHaz), color = "#2E9FDF",
+           title = "Macro Model",
+           ggtheme = theme_minimal())
 
 ###############################################################################
